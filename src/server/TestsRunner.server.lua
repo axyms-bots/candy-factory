@@ -7,6 +7,12 @@ local Tests = ServerRoot:WaitForChild("Tests")
 
 local results = TestEZ.TestBootstrap:run({ Tests }, TestEZ.Reporters.TextReporter)
 
-if not results.success then
+-- TestEZ returns a boolean success OR a results table depending on version
+local success = results
+if type(results) == "table" then
+	success = results.success
+end
+
+if not success then
 	error("TestEZ: one or more tests failed")
 end
