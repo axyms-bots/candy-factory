@@ -122,6 +122,13 @@ end
 function ThroughputSystem.Step(playerId, deltaTime)
 	local state = getPlayerState(playerId)
 	local placements = gridSystem.GetPlacedMachines(playerId)
+	-- Deterministic ordering for tests
+	table.sort(placements, function(a, b)
+		if a.x == b.x then
+			return a.y < b.y
+		end
+		return a.x < b.x
+	end)
 
 	for _, placement in ipairs(placements) do
 		local machine = getMachineState(state, placement.x, placement.y)
