@@ -130,27 +130,7 @@ function ThroughputSystem.Step(playerId, deltaTime)
 		return a.x < b.x
 	end)
 
-	-- Phase 0: drain belt queues into next machine queues (prior-step only)
-	for key, belt in pairs(state.belts) do
-		if #belt.queue > 0 then
-			local parts = string.split(key, ",")
-			local x = tonumber(parts[1])
-			local y = tonumber(parts[2])
-			if x and y and gridSystem.IsOccupied(playerId, x, y) then
-				local nx, ny = routingSystem.GetNextNode(playerId, x, y)
-				if nx ~= nil and ny ~= nil and gridSystem.IsOccupied(playerId, nx, ny) then
-					local machine = getMachineState(state, nx, ny)
-					local effectiveSize = #machine.queue + (machine.processingSlot and 1 or 0)
-					if effectiveSize < MAX_MACHINE_QUEUE then
-						while #belt.queue > 0 and effectiveSize < MAX_MACHINE_QUEUE do
-							table.insert(machine.queue, table.remove(belt.queue, 1))
-							effectiveSize += 1
-						end
-					end
-				end
-			end
-		end
-	end
+	-- Phase 0: (belt draining intentionally deferred; no same-step drain)
 
 	-- Phase 1: load processing slots from queue (no time decrement this step)
 	for _, placement in ipairs(placements) do
