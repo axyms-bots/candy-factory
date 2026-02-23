@@ -155,9 +155,10 @@ function ThroughputSystem.Step(playerId, deltaTime)
 				local nx, ny = routingSystem.GetNextNode(playerId, placement.x, placement.y)
 				if nx ~= nil and ny ~= nil then
 					local targetMachine = getMachineState(state, nx, ny)
+					local effectiveSize = #targetMachine.queue + (targetMachine.processingSlot and 1 or 0)
 					-- If destination is already full, route to belt/overflow immediately
-					if #targetMachine.queue >= MAX_MACHINE_QUEUE then
-						local belt = getBeltState(state, nx, ny)
+					if effectiveSize >= MAX_MACHINE_QUEUE then
+						local belt = getBeltState(state, placement.x, placement.y)
 						if #belt.queue < MAX_BELT_QUEUE then
 							table.insert(belt.queue, candy)
 						else
@@ -175,17 +176,22 @@ function ThroughputSystem.Step(playerId, deltaTime)
 		end
 	end
 
-	-- Phase 2: move belt queues into machine queues when possible (if space exists)
+	-- Phase 2: move belt queues into next machine queues when possible (if space exists)
 	for key, belt in pairs(state.belts) do
 		if #belt.queue > 0 then
 			local parts = string.split(key, ",")
 			local x = tonumber(parts[1])
 			local y = tonumber(parts[2])
 			if x and y and gridSystem.IsOccupied(playerId, x, y) then
-				local machine = getMachineState(state, x, y)
-				if #machine.queue < MAX_MACHINE_QUEUE then
-					while #belt.queue > 0 and #machine.queue < MAX_MACHINE_QUEUE do
-						table.insert(machine.queue, table.remove(belt.queue, 1))
+				local nx, ny = routingSystem.GetNextNode(playerId, x, y)
+				if nx ~= nil and ny ~= nil and gridSystem.IsOccupied(playerId, nx, ny) then
+					local machine = getMachineState(state, nx, ny)
+					local effectiveSize = #machine.queue + (machine.processingSlot and 1 or 0)
+					if effectiveSize < MAX_MACHINE_QUEUE then
+						while #belt.queue > 0 and effectiveSize < MAX_MACHINE_QUEUE do
+							table.insert(machine.queue, table.remove(belt.queue, 1))
+							effectiveSize += 1
+						end
 					end
 				end
 			end

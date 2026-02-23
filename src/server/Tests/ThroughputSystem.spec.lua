@@ -60,7 +60,7 @@ return function()
 				ThroughputSystem.Step(PLAYER, 0.7)
 			end
 
-			local belt = ThroughputSystem.GetBeltState(PLAYER, 2, 1)
+			local belt = ThroughputSystem.GetBeltState(PLAYER, 1, 1)
 			expect(#belt.queue).to.equal(3)
 
 			local events = ThroughputSystem.GetOverflowEvents(PLAYER)
