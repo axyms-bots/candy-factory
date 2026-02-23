@@ -155,9 +155,8 @@ function ThroughputSystem.Step(playerId, deltaTime)
 				local nx, ny = routingSystem.GetNextNode(playerId, placement.x, placement.y)
 				if nx ~= nil and ny ~= nil then
 					local targetMachine = getMachineState(state, nx, ny)
-					if #targetMachine.queue < MAX_MACHINE_QUEUE then
-						table.insert(targetMachine.queue, candy)
-					else
+					-- If destination is already full, route to belt/overflow immediately
+					if #targetMachine.queue >= MAX_MACHINE_QUEUE then
 						local belt = getBeltState(state, nx, ny)
 						if #belt.queue < MAX_BELT_QUEUE then
 							table.insert(belt.queue, candy)
@@ -168,13 +167,15 @@ function ThroughputSystem.Step(playerId, deltaTime)
 								xp = (candy.value or 0) * 0.75,
 							})
 						end
+					else
+						table.insert(targetMachine.queue, candy)
 					end
 				end
 			end
 		end
 	end
 
-	-- Phase 2: move belt queues into machine queues when possible
+	-- Phase 2: move belt queues into machine queues when possible (if space exists)
 	for key, belt in pairs(state.belts) do
 		if #belt.queue > 0 then
 			local parts = string.split(key, ",")
@@ -182,8 +183,10 @@ function ThroughputSystem.Step(playerId, deltaTime)
 			local y = tonumber(parts[2])
 			if x and y and gridSystem.IsOccupied(playerId, x, y) then
 				local machine = getMachineState(state, x, y)
-				while #belt.queue > 0 and #machine.queue < MAX_MACHINE_QUEUE do
-					table.insert(machine.queue, table.remove(belt.queue, 1))
+				if #machine.queue < MAX_MACHINE_QUEUE then
+					while #belt.queue > 0 and #machine.queue < MAX_MACHINE_QUEUE do
+						table.insert(machine.queue, table.remove(belt.queue, 1))
+					end
 				end
 			end
 		end
