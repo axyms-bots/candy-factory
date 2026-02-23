@@ -21,6 +21,11 @@
 2. Press Play.
 3. Confirm TestEZ summary includes RoutingSystem tests and no errors.
 
+### Manual Validation (M1 - ThroughputSystem)
+1. Start Rojo and connect.
+2. Press Play.
+3. Confirm TestEZ summary includes ThroughputSystem tests and no errors.
+
 ### Test Runner
 - `src/server/TestsRunner.server.lua`
 - Loads TestEZ from `src/server/ThirdParty/TestEZ/` and runs all tests under `Tests`.
