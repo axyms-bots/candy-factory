@@ -146,14 +146,15 @@ function ThroughputSystem.Step(playerId, deltaTime)
 		local machine = getMachineState(state, placement.x, placement.y)
 
 		if machine.processingSlot ~= nil then
-			machine.processTimer = machine.processTimer - deltaTime
-			if machine.processTimer <= 0 then
-				local candy = machine.processingSlot
-				machine.processingSlot = nil
-				machine.processTimer = 0
+			local nx, ny = routingSystem.GetNextNode(playerId, placement.x, placement.y)
+			-- If no next node, treat as blocked: do not process this tick
+			if nx ~= nil and ny ~= nil then
+				machine.processTimer = machine.processTimer - deltaTime
+				if machine.processTimer <= 0 then
+					local candy = machine.processingSlot
+					machine.processingSlot = nil
+					machine.processTimer = 0
 
-				local nx, ny = routingSystem.GetNextNode(playerId, placement.x, placement.y)
-				if nx ~= nil and ny ~= nil then
 					local targetMachine = getMachineState(state, nx, ny)
 					local effectiveSize = #targetMachine.queue + (targetMachine.processingSlot and 1 or 0)
 					-- If destination is already full, route to belt/overflow immediately
