@@ -9,6 +9,7 @@ return function()
 
 	beforeEach(function()
 		GridSystem.Init()
+		RoutingSystem.Init(GridSystem)
 	end)
 
 	describe("rotation mapping", function()

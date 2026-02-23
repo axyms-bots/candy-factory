@@ -1,11 +1,20 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local Server = ServerScriptService:WaitForChild("Server")
-local GridSystem = require(Server.Systems:WaitForChild("GridSystem"))
+local DefaultGridSystem = require(Server.Systems:WaitForChild("GridSystem"))
 
 local RoutingSystem = {}
 
 local MAX_PATH = 100
+local gridSystem = DefaultGridSystem
+
+function RoutingSystem.Init(injectedGridSystem)
+	if injectedGridSystem ~= nil then
+		gridSystem = injectedGridSystem
+	else
+		gridSystem = DefaultGridSystem
+	end
+end
 
 function RoutingSystem.GetOutputDirection(rotation)
 	if rotation == 0 then
@@ -21,7 +30,7 @@ function RoutingSystem.GetOutputDirection(rotation)
 end
 
 function RoutingSystem.GetNextNode(playerId, x, y)
-	local placements = GridSystem.GetPlacedMachines(playerId)
+	local placements = gridSystem.GetPlacedMachines(playerId)
 	local rotation
 	for _, placement in ipairs(placements) do
 		if placement.x == x and placement.y == y then
@@ -36,11 +45,11 @@ function RoutingSystem.GetNextNode(playerId, x, y)
 	local dx, dy = RoutingSystem.GetOutputDirection(rotation)
 	local nx, ny = x + dx, y + dy
 
-	if not GridSystem.IsInBounds(nx, ny) then
+	if not gridSystem.IsInBounds(nx, ny) then
 		return nil, nil
 	end
 
-	if not GridSystem.IsOccupied(playerId, nx, ny) then
+	if not gridSystem.IsOccupied(playerId, nx, ny) then
 		return nil, nil
 	end
 
