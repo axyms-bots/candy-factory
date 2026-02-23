@@ -130,15 +130,10 @@ function ThroughputSystem.Step(playerId, deltaTime)
 		return a.x < b.x
 	end)
 
+	-- Phase 1: tick existing processing slots and emit outputs
 	for _, placement in ipairs(placements) do
 		local machine = getMachineState(state, placement.x, placement.y)
 		machine.machineId = placement.machineId
-
-		if machine.processingSlot == nil and #machine.queue > 0 then
-			machine.processingSlot = table.remove(machine.queue, 1)
-			local speed = SPEED_BY_MACHINE[machine.machineId] or SPEED.FAST
-			machine.processTimer = speed
-		end
 
 		if machine.processingSlot ~= nil then
 			machine.processTimer = machine.processTimer - deltaTime
@@ -169,7 +164,7 @@ function ThroughputSystem.Step(playerId, deltaTime)
 		end
 	end
 
-	-- Move belt queues into machine queues when possible
+	-- Phase 2: move belt queues into machine queues when possible
 	for key, belt in pairs(state.belts) do
 		if #belt.queue > 0 then
 			local parts = string.split(key, ",")
@@ -181,6 +176,16 @@ function ThroughputSystem.Step(playerId, deltaTime)
 					table.insert(machine.queue, table.remove(belt.queue, 1))
 				end
 			end
+		end
+	end
+
+	-- Phase 3: load processing slots from queue (no time decrement this step)
+	for _, placement in ipairs(placements) do
+		local machine = getMachineState(state, placement.x, placement.y)
+		if machine.processingSlot == nil and #machine.queue > 0 then
+			machine.processingSlot = table.remove(machine.queue, 1)
+			local speed = SPEED_BY_MACHINE[machine.machineId] or SPEED.FAST
+			machine.processTimer = speed
 		end
 	end
 end
