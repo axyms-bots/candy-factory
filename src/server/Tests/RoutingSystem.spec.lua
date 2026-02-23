@@ -67,8 +67,8 @@ return function()
 			GridSystem.PlaceMachine(PLAYER, "b", 3, 2, 3) -- west
 
 			local path = RoutingSystem.GetFlowPath(PLAYER, 2, 2)
-			expect(#path).to.be.greaterThan(0)
-			expect(#path).to.be.lessThanOrEqual(100)
+			expect(#path > 0).to.equal(true)
+			expect(#path <= 100).to.equal(true)
 		end)
 	end)
 end
